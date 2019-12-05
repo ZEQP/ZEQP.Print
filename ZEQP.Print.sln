@@ -3,7 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.902
 MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZEQP.Print.Framework", "ZEQP.Print.Framework\ZEQP.Print.Framework.csproj", "{4F0E0000-2A10-43B5-B1CA-353E4E8A4745}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZEQP.Print.Service", "ZEQP.Print.Service\ZEQP.Print.Service.csproj", "{D4338D05-F3F5-4DEB-A290-5B00D8DDD522}"
+EndProject
 Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4F0E0000-2A10-43B5-B1CA-353E4E8A4745}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4F0E0000-2A10-43B5-B1CA-353E4E8A4745}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4F0E0000-2A10-43B5-B1CA-353E4E8A4745}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4F0E0000-2A10-43B5-B1CA-353E4E8A4745}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D4338D05-F3F5-4DEB-A290-5B00D8DDD522}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D4338D05-F3F5-4DEB-A290-5B00D8DDD522}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D4338D05-F3F5-4DEB-A290-5B00D8DDD522}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D4338D05-F3F5-4DEB-A290-5B00D8DDD522}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
 	EndGlobalSection
