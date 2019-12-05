@@ -39,6 +39,7 @@ namespace ZEQP.Print.Service
         {
             var request = context.Request;
             var response = context.Response;
+            response.ContentType = "application/json";
             try
             {
                 this.Log.Info(request.Url);
@@ -62,7 +63,6 @@ namespace ZEQP.Print.Service
                 response.ContentEncoding = Encoding.UTF8;
                 response.OutputStream.Write(bytes, 0, bytes.Length);
             }
-            response.ContentType = "application/json";
             response.OutputStream.Flush();
             response.OutputStream.Close();
         }
@@ -190,6 +190,8 @@ namespace ZEQP.Print.Service
                 }
                 result.DicCotent.Add(item.Key, item.Value);
             }
+            if (String.IsNullOrEmpty(result.PrintName))
+                result.PrintName = ConfigurationManager.AppSettings["PrintName"];
             return result;
         }
         #endregion
