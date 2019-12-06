@@ -28,7 +28,7 @@ namespace ZEQP.Print.Service
             this.Log.Info($"Prefixes：{prefix}");
             this.Listener = new HttpListener();
             this.Listener.Prefixes.Add(prefix);
-
+            
         }
         protected void BeginRequestCallback(IAsyncResult result)
         {
@@ -76,7 +76,7 @@ namespace ZEQP.Print.Service
             try
             {
                 this.Listener.Start();
-                var result = this.Listener.BeginGetContext(new AsyncCallback(BeginRequestCallback), this.Listener);
+                this.Listener.BeginGetContext(new AsyncCallback(BeginRequestCallback), this.Listener);
                 this.Log.Info($"服务已启动");
                 return true;
             }

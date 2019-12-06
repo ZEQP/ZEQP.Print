@@ -43,6 +43,8 @@ namespace ZEQP.Print.Framework
                 }
             }
             this.Doc.IsUpdateFields = true;
+            var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PrintDoc", $"{DateTime.Now.ToString("yyMMddHHmmssfff")}.docx");
+            this.Doc.SaveToFile(fileName, FileFormat.Docx);
             using (var ms = new MemoryStream())
             {
                 this.Doc.SaveToStream(ms, FileFormat.XPS);
