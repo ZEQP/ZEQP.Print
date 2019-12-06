@@ -46,8 +46,11 @@ namespace ZEQP.Print.Framework
             using (var ms = new MemoryStream())
             {
                 this.Doc.SaveToStream(ms, FileFormat.XPS);
-                ms.Position = 0;
-                XpsPrintHelper.Print(ms, this.Model.PrintName, $"XPS_{DateTime.Now.ToString("yyMMddHHmmssfff")}", false);
+                for (int i = 0; i < this.Model.Copies; i++)
+                {
+                    ms.Position = 0;
+                    XpsPrintHelper.Print(ms, this.Model.PrintName, $"XPS_{i}_{DateTime.Now.ToString("yyMMddHHmmssfff")}", false);
+                }
             }
         }
 
@@ -111,6 +114,7 @@ namespace ZEQP.Print.Framework
         }
         public void Dispose()
         {
+            this.Client.Dispose();
             this.Doc.Close();
             this.Doc.Dispose();
         }
