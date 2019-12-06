@@ -57,11 +57,17 @@ namespace ZEQP.Print.Framework
             var imageModel = this.Model.ImageContent[fieldName];
             switch (imageModel.Type)
             {
-                case ImageType.Local: field.SetImage(imageModel.Value); break;
+                case ImageType.Local:
+                    {
+                        field.SetImage(imageModel.Value);
+                        field.PictureSize = new SizeF(imageModel.Width, imageModel.Height);
+                    };
+                    break;
                 case ImageType.Network:
                     {
                         var imageStream = this.Client.GetStreamAsync(imageModel.Value).Result;
                         field.SetImage(imageStream);
+                        field.PictureSize = new SizeF(imageModel.Width, imageModel.Height);
                     }; break;
                 case ImageType.BarCode:
                     {
