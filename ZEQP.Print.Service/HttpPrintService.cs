@@ -10,6 +10,7 @@ using Topshelf.Logging;
 using ZEQP.Print.Framework;
 using Newtonsoft.Json;
 using System.IO;
+using System.Data;
 
 namespace ZEQP.Print.Service
 {
@@ -43,9 +44,12 @@ namespace ZEQP.Print.Service
             try
             {
                 this.Log.Info(request.Url);
-                var dic = this.GetContent(request);
-                this.Print(dic);
-                var dicJson = dic.ToJson();
+                var model = this.GetPrintModel(request);
+                using (var printDoc = new PrintDocument(model))
+                {
+                    printDoc.Print();
+                }
+                var dicJson = model.ToJson();
                 this.Log.Info(dicJson);
                 var resBytes = Encoding.UTF8.GetBytes(dicJson);
                 response.StatusCode = 200;
@@ -65,14 +69,6 @@ namespace ZEQP.Print.Service
             }
             response.OutputStream.Flush();
             response.OutputStream.Close();
-        }
-        private void Print(Dictionary<string, string> content)
-        {
-            var model = this.ToPrintModel(content);
-            using (var printDoc = new PrintDocument(model))
-            {
-                printDoc.Print();
-            }
         }
 
         public bool Start(HostControl hostControl)
@@ -109,39 +105,76 @@ namespace ZEQP.Print.Service
             }
         }
         #region Helper
-        private Dictionary<string, string> GetContent(HttpListenerRequest request)
+        //private Dictionary<string, string> GetContent(HttpListenerRequest request)
+        //{
+        //    var result = new Dictionary<string, string>();
+        //    var method = request.HttpMethod;
+        //    var query = request.Url.Query;
+        //    var dicQuery = this.ToNameValueDictionary(query);
+        //    foreach (var item in dicQuery)
+        //    {
+        //        result.Add(item.Key, item.Value);
+        //    }
+        //    if (method.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
+        //    {
+        //        var body = request.InputStream;
+        //        //var encoding = context.Request.ContentEncoding;
+        //        var encoding = Encoding.UTF8;
+        //        var reader = new System.IO.StreamReader(body, encoding);
+        //        var bodyContent = reader.ReadToEnd();
+        //        if (request.ContentType.IndexOf("application/x-www-form-urlencoded") >= 0)
+        //        {
+        //            var dicBody = this.ToNameValueDictionary(bodyContent);
+        //            foreach (var item in dicBody)
+        //            {
+        //                result.Add(item.Key, item.Value);
+        //            }
+        //        }
+        //        else if (request.ContentType.IndexOf("application/json") >= 0)
+        //        {
+        //            var model = JsonConvert.DeserializeObject<Dictionary<string, object>>(bodyContent);
+        //            foreach (var item in model)
+        //            {
+        //                result.Add(item.Key, item.Value.ToString());
+        //            }
+        //        }
+        //    }
+        //    return result;
+        //}
+        private PrintModel GetPrintModel(HttpListenerRequest request)
         {
-            var result = new Dictionary<string, string>();
-            var method = request.HttpMethod;
+            var result = new PrintModel();
+            result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
             var query = request.Url.Query;
             var dicQuery = this.ToNameValueDictionary(query);
-            foreach (var item in dicQuery)
+            if (dicQuery.ContainsKey("PrintName")) result.PrintName = dicQuery["PrintName"];
+            if (dicQuery.ContainsKey("Copies")) result.Copies = int.Parse(dicQuery["Copies"]);
+            if (dicQuery.ContainsKey("Template"))
             {
-                result.Add(item.Key, item.Value);
+                var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", dicQuery["Template"]);
+                if (File.Exists(tempPath))
+                    result.Template = tempPath;
             }
-            if (method.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
+            var body = request.InputStream;
+            var encoding = Encoding.UTF8;
+            var reader = new StreamReader(body, encoding);
+            var bodyContent = reader.ReadToEnd();
+            var bodyModel = bodyContent.ToObject<Dictionary<string, object>>();
+            foreach (var item in bodyModel)
             {
-                var body = request.InputStream;
-                //var encoding = context.Request.ContentEncoding;
-                var encoding = Encoding.UTF8;
-                var reader = new System.IO.StreamReader(body, encoding);
-                var bodyContent = reader.ReadToEnd();
-                if (request.ContentType.IndexOf("application/x-www-form-urlencoded") >= 0)
+                if (item.Key.StartsWith("Image:"))
                 {
-                    var dicBody = this.ToNameValueDictionary(bodyContent);
-                    foreach (var item in dicBody)
-                    {
-                        result.Add(item.Key, item.Value);
-                    }
+                    var imageModel = item.Value.ToJson().ToObject<ImageContentModel>();
+                    result.ImageContent.Add(item.Key.Replace("Image:", ""), imageModel);
+                    continue;
                 }
-                else if (request.ContentType.IndexOf("application/json") >= 0)
+                if (item.Key.StartsWith("Table:"))
                 {
-                    var model = JsonConvert.DeserializeObject<Dictionary<string, object>>(bodyContent);
-                    foreach (var item in model)
-                    {
-                        result.Add(item.Key, item.Value.ToString());
-                    }
+                    var table = item.Value.ToJson().ToObject<DataTable>();
+                    result.TableContent.Add(item.Key.Replace("Table:", ""), table);
+                    continue;
                 }
+                result.FieldCotent.Add(item.Key, HttpUtility.UrlDecode(item.Value.ToString()));
             }
             return result;
         }
@@ -165,35 +198,35 @@ namespace ZEQP.Print.Service
             }
             return dic;
         }
-        public PrintModel ToPrintModel(Dictionary<string, string> dic)
-        {
-            var result = new PrintModel();
-            result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
-            foreach (var item in dic)
-            {
-                if (item.Key.Equals("PrintName", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    result.PrintName = item.Value;
-                    continue;
-                }
-                if (item.Key.Equals("Copies", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    result.Copies = int.Parse(item.Value);
-                    continue;
-                }
-                if (item.Key.Equals("Template", StringComparison.CurrentCultureIgnoreCase))
-                {
-                    var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", $"{item.Value}.docx");
-                    if (File.Exists(tempPath))
-                        result.Template = tempPath;
-                    continue;
-                }
-                result.DicCotent.Add(item.Key, item.Value);
-            }
-            if (String.IsNullOrEmpty(result.PrintName))
-                result.PrintName = ConfigurationManager.AppSettings["PrintName"];
-            return result;
-        }
+        //public PrintModel ToPrintModel(Dictionary<string, string> dic)
+        //{
+        //    var result = new PrintModel();
+        //    result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
+        //    foreach (var item in dic)
+        //    {
+        //        if (item.Key.Equals("PrintName", StringComparison.CurrentCultureIgnoreCase))
+        //        {
+        //            result.PrintName = item.Value;
+        //            continue;
+        //        }
+        //        if (item.Key.Equals("Copies", StringComparison.CurrentCultureIgnoreCase))
+        //        {
+        //            result.Copies = int.Parse(item.Value);
+        //            continue;
+        //        }
+        //        if (item.Key.Equals("Template", StringComparison.CurrentCultureIgnoreCase))
+        //        {
+        //            var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", $"{item.Value}.docx");
+        //            if (File.Exists(tempPath))
+        //                result.Template = tempPath;
+        //            continue;
+        //        }
+        //        result.FieldCotent.Add(item.Key, item.Value);
+        //    }
+        //    if (String.IsNullOrEmpty(result.PrintName))
+        //        result.PrintName = ConfigurationManager.AppSettings["PrintName"];
+        //    return result;
+        //}
         #endregion
     }
 }

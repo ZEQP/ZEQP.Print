@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -22,13 +23,51 @@ namespace ZEQP.Print.Framework
         public string Template { get; set; }
 
         /// <summary>
-        /// 内容数据源
+        /// 文本字段数据源
         /// </summary>
-        public Dictionary<string, string> DicCotent { get; set; }
+        public Dictionary<string, string> FieldCotent { get; set; }
+
+        /// <summary>
+        /// 图片数据源
+        /// </summary>
+        public Dictionary<string, ImageContentModel> ImageContent { get; set; }
+
+        /// <summary>
+        /// 表格数据源
+        /// </summary>
+        public Dictionary<string, DataTable> TableContent { get; set; }
         public PrintModel()
         {
             this.Copies = 1;
-            this.DicCotent = new Dictionary<string, string>();
+            this.FieldCotent = new Dictionary<string, string>();
+            this.ImageContent = new Dictionary<string, ImageContentModel>();
+            this.TableContent = new Dictionary<string, DataTable>();
         }
+    }
+    public class ImageContentModel
+    {
+        public ImageType Type { get; set; }
+        public string Value { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
+    }
+    public enum ImageType
+    {
+        /// <summary>
+        /// 本地图片
+        /// </summary>
+        Local = 1,
+        /// <summary>
+        /// 网络图片
+        /// </summary>
+        Network = 2,
+        /// <summary>
+        /// 条形码
+        /// </summary>
+        BarCode = 3,
+        /// <summary>
+        /// 二维码
+        /// </summary>
+        QRCode = 4
     }
 }
