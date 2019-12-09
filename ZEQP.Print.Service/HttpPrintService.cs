@@ -159,26 +159,65 @@ namespace ZEQP.Print.Service
                     result.Template = tempPath;
             }
             if (dicQuery.ContainsKey("Action")) result.Action = (PrintActionType)Enum.Parse(typeof(PrintActionType), dicQuery["Action"]);
-            var body = request.InputStream;
-            var encoding = Encoding.UTF8;
-            var reader = new StreamReader(body, encoding);
-            var bodyContent = reader.ReadToEnd();
-            var bodyModel = bodyContent.ToObject<Dictionary<string, object>>();
-            foreach (var item in bodyModel)
+
+            foreach (var item in dicQuery)
             {
                 if (item.Key.StartsWith("Image:"))
                 {
-                    var imageModel = item.Value.ToJson().ToObject<ImageContentModel>();
-                    result.ImageContent.Add(item.Key.Replace("Image:", ""), imageModel);
+                    var keyName = item.Key.Replace("Image:", "");
+                    if (result.ImageContent.ContainsKey(keyName)) continue;
+                    var imageModel = item.Value.ToObject<ImageContentModel>();
+                    result.ImageContent.Add(keyName, imageModel);
                     continue;
                 }
                 if (item.Key.StartsWith("Table:"))
                 {
-                    var table = item.Value.ToJson().ToObject<DataTable>();
-                    result.TableContent.Add(item.Key.Replace("Table:", ""), table);
+                    var keyName = item.Key.Replace("Table:", "");
+                    if (result.TableContent.ContainsKey(keyName)) continue;
+                    var table = item.Value.ToObject<DataTable>();
+                    table.TableName = keyName;
+                    result.TableContent.Add(keyName, table);
                     continue;
                 }
-                result.FieldCotent.Add(item.Key, HttpUtility.UrlDecode(item.Value.ToString()));
+                if (result.FieldCotent.ContainsKey(item.Key)) continue;
+                result.FieldCotent.Add(item.Key, item.Value);
+            }
+
+            if (request.HttpMethod.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
+            {
+                var body = request.InputStream;
+                var encoding = Encoding.UTF8;
+                var reader = new StreamReader(body, encoding);
+                var bodyContent = reader.ReadToEnd();
+                var bodyModel = bodyContent.ToObject<Dictionary<string, object>>();
+                foreach (var item in bodyModel)
+                {
+                    if (item.Key.StartsWith("Image:"))
+                    {
+                        var imageModel = item.Value.ToJson().ToObject<ImageContentModel>();
+                        var keyName = item.Key.Replace("Image:", "");
+                        if (result.ImageContent.ContainsKey(keyName))
+                            result.ImageContent[keyName] = imageModel;
+                        else
+                            result.ImageContent.Add(keyName, imageModel);
+                        continue;
+                    }
+                    if (item.Key.StartsWith("Table:"))
+                    {
+                        var table = item.Value.ToJson().ToObject<DataTable>();
+                        var keyName = item.Key.Replace("Table:", "");
+                        table.TableName = keyName;
+                        if (result.TableContent.ContainsKey(keyName))
+                            result.TableContent[keyName] = table;
+                        else
+                            result.TableContent.Add(keyName, table);
+                        continue;
+                    }
+                    if (result.FieldCotent.ContainsKey(item.Key))
+                        result.FieldCotent[item.Key] = HttpUtility.UrlDecode(item.Value.ToString());
+                    else
+                        result.FieldCotent.Add(item.Key, HttpUtility.UrlDecode(item.Value.ToString()));
+                }
             }
             return result;
         }
