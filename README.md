@@ -1,10 +1,10 @@
-#安装
+# 安装
 以管理员方式运行CMD
 进入ZEQP.Print.Service.exe所在目录
 然后运行
 ZEQP.Print.Service.exe install
 
-#启动
+# 启动
 以管理员方式运行CMD
 进入ZEQP.Print.Service.exe所在目录
 然后运行
@@ -13,7 +13,7 @@ ZEQP.Print.Service.exe start
 也可以到服务管理面板，找到ZEQPPrintService服务
 右键选择“启动”
 
-#停止
+# 停止
 以管理员方式运行CMD
 进入ZEQP.Print.Service.exe所在目录
 然后运行
@@ -22,7 +22,7 @@ ZEQP.Print.Service.exe stop
 也可以到服务管理面板，找到ZEQPPrintService服务
 右键选择“停止”
 
-#卸载
+# 卸载
 以管理员方式运行CMD
 进入ZEQP.Print.Service.exe所在目录
 然后运行
