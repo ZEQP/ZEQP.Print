@@ -24,6 +24,19 @@ ZEQP.Print.Service.exe start
 
 右键选择“启动”
 
+# 模板编辑
+使用Word编辑要打印的模板，使用“域”作为占位符
+
+![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png)
+
+
+# 打印
+## GET请求打印
+![Word模板示例](./ZEQP.Print.Service/TestImage/API_GET.png)
+
+## POST请求打印
+![Word模板示例](./ZEQP.Print.Service/TestImage/API.png)
+
 # 停止
 以管理员方式运行CMD
 
