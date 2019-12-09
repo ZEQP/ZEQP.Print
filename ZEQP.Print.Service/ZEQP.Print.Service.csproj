@@ -76,6 +76,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <None Include="packages.config" />
+    <Content Include="TestImage\API_GET.png" />
     <Content Include="TestImage\Template.png" />
     <Content Include="Template\Ball.docx">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
