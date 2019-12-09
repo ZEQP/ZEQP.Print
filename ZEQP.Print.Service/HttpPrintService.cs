@@ -28,6 +28,7 @@ namespace ZEQP.Print.Service
             this.Log.Info($"Prefixes：{prefix}");
             this.Listener = new HttpListener();
             this.Listener.Prefixes.Add(prefix);
+            this.Log.Info("HttpPrintService初始化完成");
         }
         protected void BeginRequestCallback(IAsyncResult result)
         {
@@ -108,6 +109,7 @@ namespace ZEQP.Print.Service
 
         public bool Start(HostControl hostControl)
         {
+            this.Log.Info($"服务开始启动");
             try
             {
                 this.Listener.Start();
@@ -126,6 +128,7 @@ namespace ZEQP.Print.Service
 
         public bool Stop(HostControl hostControl)
         {
+            this.Log.Info($"服务开始停止");
             try
             {
                 this.Listener.Stop();
