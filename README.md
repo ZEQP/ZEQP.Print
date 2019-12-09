@@ -27,7 +27,7 @@ ZEQP.Print.Service.exe start
 # 模板编辑
 使用Word编辑要打印的模板，使用“域”作为占位符
 
-![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png)
+![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png?raw=true)
 
 ## 图片
 域名格式"Image:ImageKey"
@@ -39,13 +39,13 @@ ZEQP.Print.Service.exe start
 
 # 打印
 ## GET请求打印
-![GET请求打印](./ZEQP.Print.Service/TestImage/API_GET.png)
+![GET请求打印](./ZEQP.Print.Service/TestImage/API_GET.png?raw=true)
 
 ## POST请求打印
-![POST请求打印](./ZEQP.Print.Service/TestImage/API.png)
+![POST请求打印](./ZEQP.Print.Service/TestImage/API.png?raw=true)
 
 ## 打印效果
-![打印效果](./ZEQP.Print.Service/TestImage/View.png)
+![打印效果](./ZEQP.Print.Service/TestImage/View.png?raw=true)
 
 # API说明
 URL参数（只能在URL后面的Query参数）
