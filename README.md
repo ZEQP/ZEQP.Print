@@ -27,7 +27,7 @@ ZEQP.Print.Service.exe start
 # 模板编辑
 使用Word编辑要打印的模板，使用“域”作为占位符
 
-![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png?raw=true)
+![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png?raw=true "Word模板示例")
 
 ## 图片
 域名格式"Image:ImageKey"
