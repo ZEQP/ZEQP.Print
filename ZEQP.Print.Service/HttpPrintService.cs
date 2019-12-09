@@ -144,8 +144,10 @@ namespace ZEQP.Print.Service
         private PrintModel GetPrintModel(HttpListenerRequest request)
         {
             var result = new PrintModel();
+            result.PrintName = ConfigurationManager.AppSettings["PrintName"];
             result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
             result.Action = PrintActionType.Print;
+
             var query = request.Url.Query;
             var dicQuery = this.ToNameValueDictionary(query);
             if (dicQuery.ContainsKey("PrintName")) result.PrintName = dicQuery["PrintName"];
