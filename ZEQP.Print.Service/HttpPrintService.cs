@@ -39,32 +39,64 @@ namespace ZEQP.Print.Service
         {
             var request = context.Request;
             var response = context.Response;
-            response.ContentType = "application/json";
+            
             try
             {
                 this.Log.Info(request.Url);
                 var model = this.GetPrintModel(request);
-                //using (var printDoc = new PrintDocument(model))
-                //{
-                //    printDoc.Print();
-                //}
-                using (var printDoc = new MergeDocument(model))
-                {
-                    printDoc.Print();
-                }
                 var dicJson = model.ToJson();
                 this.Log.Info(dicJson);
-                var resBytes = Encoding.UTF8.GetBytes(dicJson);
-                response.StatusCode = 200;
-                response.ContentLength64 = resBytes.Length;
-                response.ContentEncoding = Encoding.UTF8;
-                response.OutputStream.Write(resBytes, 0, resBytes.Length);
+
+                var printDoc = new MergeDocument(model);
+                var xpsStream = printDoc.MergeToStream();
+                if (model.Action == PrintActionType.Print)
+                {
+                    for (int i = 0; i < model.Copies; i++)
+                    {
+                        xpsStream.Seek(0, SeekOrigin.Begin);
+                        XpsPrintHelper.Print(xpsStream, model.PrintName, $"XPS_{i}_{DateTime.Now.ToString("yyMMddHHmmssfff")}", false);
+                    }
+                    var resBytes = Encoding.UTF8.GetBytes(dicJson);
+                    response.ContentType = "application/json";
+                    response.StatusCode = 200;
+                    response.ContentLength64 = resBytes.Length;
+                    response.ContentEncoding = Encoding.UTF8;
+                    response.OutputStream.Write(resBytes, 0, resBytes.Length);
+                }
+                if (model.Action == PrintActionType.File)
+                {
+                    response.ContentType = "application/vnd.ms-xpsdocument";
+                    response.AddHeader("Content-Disposition", $"attachment; filename=XPS_{DateTime.Now.ToString("yyMMddHHmmssfff")}.xps");
+                    response.StatusCode = 200;
+                    response.ContentLength64 = xpsStream.Length;
+                    //response.ContentEncoding = Encoding.UTF8;
+                    xpsStream.Seek(0, SeekOrigin.Begin);
+                    xpsStream.CopyTo(response.OutputStream);
+                }
+                if (model.Action == PrintActionType.PrintAndFile)
+                {
+                    for (int i = 0; i < model.Copies; i++)
+                    {
+                        xpsStream.Seek(0, SeekOrigin.Begin);
+                        XpsPrintHelper.Print(xpsStream, model.PrintName, $"XPS_{i}_{DateTime.Now.ToString("yyMMddHHmmssfff")}", false);
+                    }
+                    response.ContentType = "application/vnd.ms-xpsdocument";
+                    response.AddHeader("Content-Disposition", $"attachment; filename=XPS_{DateTime.Now.ToString("yyMMddHHmmssfff")}.xps");
+                    response.StatusCode = 200;
+                    response.ContentLength64 = xpsStream.Length;
+                    //response.ContentEncoding = Encoding.UTF8;
+                    xpsStream.Seek(0, SeekOrigin.Begin);
+                    xpsStream.CopyTo(response.OutputStream);
+                }
+                xpsStream.Dispose();
+                printDoc.Dispose();
             }
             catch (Exception ex)
             {
                 this.Log.Error(ex.Message, ex);
                 var json = ex.ToJson();
                 var bytes = Encoding.UTF8.GetBytes(json);
+                response.ContentType = "application/json";
                 response.StatusCode = 500;
                 response.ContentLength64 = bytes.Length;
                 response.ContentEncoding = Encoding.UTF8;
@@ -108,46 +140,12 @@ namespace ZEQP.Print.Service
             }
         }
         #region Helper
-        //private Dictionary<string, string> GetContent(HttpListenerRequest request)
-        //{
-        //    var result = new Dictionary<string, string>();
-        //    var method = request.HttpMethod;
-        //    var query = request.Url.Query;
-        //    var dicQuery = this.ToNameValueDictionary(query);
-        //    foreach (var item in dicQuery)
-        //    {
-        //        result.Add(item.Key, item.Value);
-        //    }
-        //    if (method.Equals("POST", StringComparison.CurrentCultureIgnoreCase))
-        //    {
-        //        var body = request.InputStream;
-        //        //var encoding = context.Request.ContentEncoding;
-        //        var encoding = Encoding.UTF8;
-        //        var reader = new System.IO.StreamReader(body, encoding);
-        //        var bodyContent = reader.ReadToEnd();
-        //        if (request.ContentType.IndexOf("application/x-www-form-urlencoded") >= 0)
-        //        {
-        //            var dicBody = this.ToNameValueDictionary(bodyContent);
-        //            foreach (var item in dicBody)
-        //            {
-        //                result.Add(item.Key, item.Value);
-        //            }
-        //        }
-        //        else if (request.ContentType.IndexOf("application/json") >= 0)
-        //        {
-        //            var model = JsonConvert.DeserializeObject<Dictionary<string, object>>(bodyContent);
-        //            foreach (var item in model)
-        //            {
-        //                result.Add(item.Key, item.Value.ToString());
-        //            }
-        //        }
-        //    }
-        //    return result;
-        //}
+
         private PrintModel GetPrintModel(HttpListenerRequest request)
         {
             var result = new PrintModel();
             result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
+            result.Action = PrintActionType.Print;
             var query = request.Url.Query;
             var dicQuery = this.ToNameValueDictionary(query);
             if (dicQuery.ContainsKey("PrintName")) result.PrintName = dicQuery["PrintName"];
@@ -158,6 +156,7 @@ namespace ZEQP.Print.Service
                 if (File.Exists(tempPath))
                     result.Template = tempPath;
             }
+            if (dicQuery.ContainsKey("Action")) result.Action = (PrintActionType)Enum.Parse(typeof(PrintActionType), dicQuery["Action"]);
             var body = request.InputStream;
             var encoding = Encoding.UTF8;
             var reader = new StreamReader(body, encoding);
@@ -201,35 +200,6 @@ namespace ZEQP.Print.Service
             }
             return dic;
         }
-        //public PrintModel ToPrintModel(Dictionary<string, string> dic)
-        //{
-        //    var result = new PrintModel();
-        //    result.Template = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", "Default.docx");
-        //    foreach (var item in dic)
-        //    {
-        //        if (item.Key.Equals("PrintName", StringComparison.CurrentCultureIgnoreCase))
-        //        {
-        //            result.PrintName = item.Value;
-        //            continue;
-        //        }
-        //        if (item.Key.Equals("Copies", StringComparison.CurrentCultureIgnoreCase))
-        //        {
-        //            result.Copies = int.Parse(item.Value);
-        //            continue;
-        //        }
-        //        if (item.Key.Equals("Template", StringComparison.CurrentCultureIgnoreCase))
-        //        {
-        //            var tempPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Template", $"{item.Value}.docx");
-        //            if (File.Exists(tempPath))
-        //                result.Template = tempPath;
-        //            continue;
-        //        }
-        //        result.FieldCotent.Add(item.Key, item.Value);
-        //    }
-        //    if (String.IsNullOrEmpty(result.PrintName))
-        //        result.PrintName = ConfigurationManager.AppSettings["PrintName"];
-        //    return result;
-        //}
         #endregion
     }
 }

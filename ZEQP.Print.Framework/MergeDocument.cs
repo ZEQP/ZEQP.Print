@@ -27,13 +27,12 @@ namespace ZEQP.Print.Framework
             this.FieldCallback = new PrintFieldMergingCallback(this.Model);
             this.Doc.MailMerge.FieldMergingCallback = this.FieldCallback;
         }
-        public void Print()
+        public Stream MergeToStream()
         {
             if (this.Model.FieldCotent.Count > 0)
                 this.Doc.MailMerge.Execute(this.Model.FieldCotent.Keys.ToArray(), this.Model.FieldCotent.Values.ToArray());
             if (this.Model.ImageContent.Count > 0)
             {
-                //this.Doc.MailMerge.MergeImageField += MailMerge_MergeImageField;
                 this.Doc.MailMerge.Execute(this.Model.ImageContent.Keys.ToArray(), this.Model.ImageContent.Values.Select(s => s.Value).ToArray());
             };
             if (this.Model.TableContent.Count > 0)
@@ -42,22 +41,15 @@ namespace ZEQP.Print.Framework
                 {
                     var table = item.Value;
                     table.TableName = item.Key;
-                    //this.Doc.MailMerge.ExecuteWithRegions()
                     this.Doc.MailMerge.ExecuteWithRegions(table);
                 }
             }
             this.Doc.UpdateFields();
 
             var fileName = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "PrintDoc", $"{DateTime.Now.ToString("yyMMddHHmmssfff")}.docx");
-            using (var ms = new MemoryStream())
-            {
-                this.Doc.Save(ms, SaveFormat.Xps);
-                for (int i = 0; i < this.Model.Copies; i++)
-                {
-                    ms.Position = 0;
-                    XpsPrintHelper.Print(ms, this.Model.PrintName, $"XPS_{i}_{DateTime.Now.ToString("yyMMddHHmmssfff")}", false);
-                }
-            }
+            var ms = new MemoryStream();
+            this.Doc.Save(ms, SaveFormat.Xps);
+            return ms;
         }
 
         public void Dispose()

@@ -21,7 +21,10 @@ namespace ZEQP.Print.Framework
         /// 模板名称
         /// </summary>
         public string Template { get; set; }
-
+        /// <summary>
+        /// 执行动作
+        /// </summary>
+        public PrintActionType Action { get; set; }
         /// <summary>
         /// 文本字段数据源
         /// </summary>
@@ -69,5 +72,20 @@ namespace ZEQP.Print.Framework
         /// 二维码
         /// </summary>
         QRCode = 4
+    }
+    public enum PrintActionType
+    {
+        /// <summary>
+        /// 打印
+        /// </summary>
+        Print = 0,
+        /// <summary>
+        /// 输出成文件
+        /// </summary>
+        File = 1,
+        /// <summary>
+        /// 打印并输出成文件
+        /// </summary>
+        PrintAndFile = 2
     }
 }
