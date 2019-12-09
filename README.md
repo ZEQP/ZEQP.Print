@@ -27,6 +27,8 @@ ZEQP.Print.Service.exe start
 # 模板编辑
 使用Word编辑要打印的模板，使用“域”作为占位符
 
+请参照ZEQP.Print.Service/TestImage/Template.png
+
 ![Word模板示例](./ZEQP.Print.Service/TestImage/Template.png?raw=true "Word模板示例")
 
 ## 图片
@@ -39,12 +41,21 @@ ZEQP.Print.Service.exe start
 
 # 打印
 ## GET请求打印
+
+请参照ZEQP.Print.Service/TestImage/API_GET.png
+
 ![GET请求打印](./ZEQP.Print.Service/TestImage/API_GET.png?raw=true)
 
 ## POST请求打印
+
+请参照ZEQP.Print.Service/TestImage/API.png
+
 ![POST请求打印](./ZEQP.Print.Service/TestImage/API.png?raw=true)
 
 ## 打印效果
+
+请参照ZEQP.Print.Service/TestImage/View.png
+
 ![打印效果](./ZEQP.Print.Service/TestImage/View.png?raw=true)
 
 # API说明
