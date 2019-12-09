@@ -28,7 +28,6 @@ namespace ZEQP.Print.Service
             this.Log.Info($"Prefixes：{prefix}");
             this.Listener = new HttpListener();
             this.Listener.Prefixes.Add(prefix);
-            
         }
         protected void BeginRequestCallback(IAsyncResult result)
         {
@@ -45,7 +44,11 @@ namespace ZEQP.Print.Service
             {
                 this.Log.Info(request.Url);
                 var model = this.GetPrintModel(request);
-                using (var printDoc = new PrintDocument(model))
+                //using (var printDoc = new PrintDocument(model))
+                //{
+                //    printDoc.Print();
+                //}
+                using (var printDoc = new MergeDocument(model))
                 {
                     printDoc.Print();
                 }
